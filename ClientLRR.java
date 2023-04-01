@@ -13,7 +13,7 @@ public class ClientLRR {
             dataIn = new BufferedReader(new InputStreamReader(s.getInputStream()));
             dataOut = new DataOutputStream(s.getOutputStream());
             String reply;
-            String replier = "Server Reply: ";
+            String replier = "Reply: ";
             String serverOK = "OK";
             String username = "ClientUser1";
 
