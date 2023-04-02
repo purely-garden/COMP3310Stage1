@@ -31,7 +31,7 @@ public class ClientLRR {
             reply = dataIn.readLine();
             System.out.println(replier.concat(reply));
             if (!isOk(reply)) {
-                throw new HandshakeException("HELO -> server reply is not OK");
+                throw new HandshakeException("AUTH -> server reply is not OK");
             }
 
             System.out.println("REDY");
