@@ -14,7 +14,7 @@ public class ClientLRR {
                 BufferedReader dataIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 DataOutputStream dataOut = new DataOutputStream(socket.getOutputStream());) {
             String reply;
-            String username = "ClientUser1";
+            String username = "ClientUser1\n";
 
             System.out.println("HELO");
             dataOut.write(("HELO\n").getBytes());
@@ -26,7 +26,7 @@ public class ClientLRR {
             }
 
             System.out.println("AUTH " + username);
-            dataOut.write(("AUTH " + username + "\n").getBytes());
+            dataOut.write(("AUTH " + username).getBytes());
             dataOut.flush();
             reply = dataIn.readLine();
             System.out.println(replier.concat(reply));
