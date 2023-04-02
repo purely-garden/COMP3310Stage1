@@ -40,21 +40,21 @@ public class ClientLRR {
             dataOut.write(("REDY\n").getBytes());
             dataOut.flush();
             reply = dataIn.readLine();
+            System.out.println(replier.concat(reply));
             // JOBN 37 0 653 3 700 3800
             // submitTime jobID estRuntime resource-Requirements(core memory disk)
-            Pattern redyPattern = Pattern.compile("[[:alnum:]]+");
+            Pattern redyPattern = Pattern.compile("[a-z0-9]+", Pattern.CASE_INSENSITIVE);
             Matcher redyMatcher = redyPattern.matcher(reply);
             redyMatcher.find();
             String jobMsg = redyMatcher.group();
             System.out.println("jobmsg " + jobMsg);
             int[] jobInfo = new int[6];
-            for(int k = 0; k < 6; k++) {
-                if(redyMatcher.find()) {
+            for (int k = 0; k < 6; k++) {
+                if (redyMatcher.find()) {
                     jobInfo[k] = Integer.parseInt(redyMatcher.group(0));
-                    System.out.println("JobInfo ["+k+"] " + jobInfo[k]);
+                    System.out.println("JobInfo [" + k + "] " + jobInfo[k]);
                 }
             }
-            System.out.println(replier.concat(reply));
 
             System.out.println("GETS All");
             dataOut.write(("GETS All\n").getBytes());
@@ -76,13 +76,11 @@ public class ClientLRR {
             for (int i = 0; i < nRecs; i++) {
                 reply = dataIn.readLine();
                 getsAllStrings[i] = reply;
-                System.out.println("Record ["+i+"] " + getsAllStrings[i]);
+                System.out.println("Record [" + i + "] " + getsAllStrings[i]);
             }
             System.out.println("OK");
             dataOut.write(("OK\n").getBytes());
             dataOut.flush();
-
-
 
             System.out.println("QUIT");
             dataOut.write(("QUIT\n").getBytes());
@@ -94,6 +92,7 @@ public class ClientLRR {
             System.out.println(e);
         }
     }
+
     static boolean isOk(String s) {
         return s.compareTo(serverOK) == 0;
     }
