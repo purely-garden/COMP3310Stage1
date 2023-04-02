@@ -3,17 +3,14 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.sound.sampled.AudioFormat.Encoding;
 
 import custom_exception.HandshakeException;
 import custom_exception.NoEmploymentException;
 
-public class ClientLRR {
+public class Client {
     static String replier = "C RCVD ";
     static String sendier = "C SENT ";
     static String serverOK = "OK";
