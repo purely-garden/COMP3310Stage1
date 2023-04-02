@@ -31,6 +31,12 @@ public class ClientLRR {
             reply = dataIn.readLine();
             System.out.println(replier.concat(reply));
 
+            System.out.println("REDY");
+            dataOut.write(("REDY\n").getBytes());
+            dataOut.flush();
+            reply = dataIn.readLine();
+            System.out.println(replier.concat(reply));
+
         } catch (Exception e) {
             System.out.println(e);
         }
