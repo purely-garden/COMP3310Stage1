@@ -6,6 +6,9 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.sound.sampled.AudioFormat.Encoding;
+
 import custom_exception.HandshakeException;
 import custom_exception.NoEmploymentException;
 
@@ -88,8 +91,9 @@ public class ClientLRR {
                 strBuild.append(largestServerType).append(SPACE);
                 strBuild.append(LRRCount);
                 System.out.println(strBuild.toString());
-                System.out.println(strBuild.toString().getBytes());
-                dataOut.write(strBuild.toString().getBytes());
+                byte[] buffer = strBuild.toString().getBytes();
+
+                dataOut.write(buffer);
                 dataOut.flush();
                 reply = dataIn.readLine();
                 System.out.println(replier.concat(reply));
