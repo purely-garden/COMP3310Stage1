@@ -36,12 +36,12 @@ public class ClientLRR {
                         throw new HandshakeException("HELO -> server reply is not OK");
                     }
                 }
-                
             }
 
             System.out.println("AUTH " + username);
             dataOut.write(("AUTH " + username + "\n").getBytes());
             dataOut.flush();
+            
 
         } catch (Exception e) {
             System.out.println(e);
