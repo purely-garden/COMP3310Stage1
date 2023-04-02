@@ -74,16 +74,18 @@ public class ClientLRR {
             System.out.println(replier.concat(reply));
 
             Servers serverList = new Servers(getsServerRecords);
-            ArrayList<String> largestServers = (ArrayList<String>) serverList.findLargest();
-            System.out.println(largestServers);
+            String largestServerType = serverList.findLargest();
+            int largestServerCount = serverList.getLargestServerCount();
+            System.out.println("servername "+largestServerType);
+            System.out.println("servercount "+largestServerCount);
             String schd = "SCHD";
             String SPACE = " ";
 
-            while (curJob.isNONE()) {
+            while (!curJob.isNONE()) {
                 int LRRCount = 0;
                 StringBuilder strBuild = new StringBuilder(schd).append(SPACE);
                 strBuild.append(curJob.id).append(SPACE);
-                strBuild.append(largestServers.get(LRRCount)).append(SPACE);
+                strBuild.append(largestServerType).append(SPACE);
                 strBuild.append(LRRCount);
                 System.out.println(strBuild.toString());
 
@@ -92,7 +94,7 @@ public class ClientLRR {
                 reply = dataIn.readLine();
                 System.out.println(replier.concat(reply));
                 curJob = doREDY(dataIn, dataOut, reply);
-                LRRCount = (LRRCount + 1) % largestServers.size();
+                LRRCount = (LRRCount + 1) % largestServerCount;
             }
 
             System.out.println(sendier + "QUIT");
