@@ -1,13 +1,17 @@
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import custom_exception.HandshakeException;
+import custom_exception.NoEmploymentException;
 
 public class ClientLRR {
-    static String replier = "Reply: ";
+    static String replier = "C RCVD ";
+    static String sendier = "C SENT ";
     static String serverOK = "OK";
 
     public static void main(String[] args) {
@@ -16,9 +20,9 @@ public class ClientLRR {
                 BufferedReader dataIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 DataOutputStream dataOut = new DataOutputStream(socket.getOutputStream());) {
             String reply;
-            String username = "ClientUser1";
+            String username = System.getProperty("user.name");
 
-            System.out.println("HELO");
+            System.out.println(sendier + "HELO");
             dataOut.write(("HELO\n").getBytes());
             dataOut.flush();
             reply = dataIn.readLine();
@@ -27,7 +31,7 @@ public class ClientLRR {
                 throw new HandshakeException("HELO -> server reply is not OK");
             }
 
-            System.out.println("AUTH " + username);
+            System.out.println(sendier + "AUTH " + username);
             dataOut.write(("AUTH " + username + "\n").getBytes());
             dataOut.flush();
             reply = dataIn.readLine();
@@ -35,28 +39,13 @@ public class ClientLRR {
             if (!isOk(reply)) {
                 throw new HandshakeException("AUTH -> server reply is not OK");
             }
-
-            System.out.println("REDY");
-            dataOut.write(("REDY\n").getBytes());
-            dataOut.flush();
-            reply = dataIn.readLine();
-            System.out.println(replier.concat(reply));
-            // JOBN 37 0 653 3 700 3800
-            // submitTime jobID estRuntime resource-Requirements(core memory disk)
-            Pattern redyPattern = Pattern.compile("[a-z0-9]+", Pattern.CASE_INSENSITIVE);
-            Matcher redyMatcher = redyPattern.matcher(reply);
-            redyMatcher.find();
-            String jobMsg = redyMatcher.group();
-            System.out.println("jobmsg " + jobMsg);
-            int[] jobInfo = new int[6];
-            for (int k = 0; k < 6; k++) {
-                if (redyMatcher.find()) {
-                    jobInfo[k] = Integer.parseInt(redyMatcher.group(0));
-                    System.out.println("JobInfo [" + k + "] " + jobInfo[k]);
-                }
+            
+            Job curJob = doREDY(dataIn, dataOut, reply);
+            if (curJob.isNONE()) {
+                throw new NoEmploymentException("Get an Employment", new Throwable("REDY:NONE"));
             }
 
-            System.out.println("GETS All");
+            System.out.println(sendier + "GETS All");
             dataOut.write(("GETS All\n").getBytes());
             dataOut.flush();
             reply = dataIn.readLine();
@@ -69,20 +58,43 @@ public class ClientLRR {
                 nRecs = Integer.parseInt(dataMatcher.group(1));
                 recLen = Integer.parseInt(dataMatcher.group(2));
             }
-            System.out.println("OK");
+            System.out.println(sendier + "OK");
             dataOut.write(("OK\n").getBytes());
             dataOut.flush();
-            String[] getsAllStrings = new String[nRecs];
+            String[] getsServerRecords = new String[nRecs];
             for (int i = 0; i < nRecs; i++) {
                 reply = dataIn.readLine();
-                getsAllStrings[i] = reply;
-                System.out.println("Record [" + i + "] " + getsAllStrings[i]);
+                getsServerRecords[i] = reply;
+                System.out.println(replier.concat(getsServerRecords[i]));
             }
-            System.out.println("OK");
+            System.out.println(sendier + "OK");
             dataOut.write(("OK\n").getBytes());
             dataOut.flush();
+            reply = dataIn.readLine();
+            System.out.println(replier.concat(reply));
 
-            System.out.println("QUIT");
+            Servers serverList = new Servers(getsServerRecords);
+            ArrayList<String> largestServers = (ArrayList<String>) serverList.findLargest();
+            System.out.println(largestServers);
+            String schd = "SCHD";
+            String SPACE = " ";
+
+            while (curJob.isNONE()) {
+                int LRRCount = 0;
+                StringBuilder strBuild = new StringBuilder(schd).append(SPACE);
+                strBuild.append(curJob.id).append(SPACE);
+                strBuild.append(largestServers.get(LRRCount)).append(SPACE);
+                strBuild.append(LRRCount);
+                System.out.println(strBuild.toString());
+
+                dataOut.write(strBuild.toString().getBytes());
+                dataOut.flush();
+                reply = dataIn.readLine();
+                System.out.println(replier.concat(reply));
+                curJob = doREDY(dataIn, dataOut, reply);
+            }
+
+            System.out.println(sendier + "QUIT");
             dataOut.write(("QUIT\n").getBytes());
             dataOut.flush();
             reply = dataIn.readLine();
@@ -97,4 +109,40 @@ public class ClientLRR {
         return s.compareTo(serverOK) == 0;
     }
 
+    static Job doREDY(BufferedReader dataIn, DataOutputStream dataOut, String reply) throws IOException {
+        System.out.println(sendier+"REDY");
+        dataOut.write(("REDY\n").getBytes());
+        dataOut.flush();
+        reply = dataIn.readLine();
+        System.out.println(replier.concat(reply));
+        return new Job(reply);
+    }
+
+    static boolean doREDY(BufferedReader dataIn, DataOutputStream dataOut, String reply, int[] jobInfo, String jobMsg)
+            throws IOException {
+        System.out.println(sendier+"REDY");
+        dataOut.write(("REDY\n").getBytes());
+        dataOut.flush();
+        reply = dataIn.readLine();
+        System.out.println(replier.concat(reply));
+
+        Pattern redyPattern = Pattern.compile("[a-z0-9]+", Pattern.CASE_INSENSITIVE);
+        Matcher redyMatcher = redyPattern.matcher(reply);
+        redyMatcher.find();
+        jobMsg = redyMatcher.group();
+        System.out.println("jobmsg " + jobMsg);
+        if (jobMsg.compareTo("NONE") == 0) {
+            return false;
+        }
+        jobInfo = new int[6];
+        for (int k = 0; k < 6; k++) {
+            if (redyMatcher.find()) {
+                jobInfo[k] = Integer.parseInt(redyMatcher.group(0));
+                System.out.print("JobInfo");
+                System.out.print(" [" + k + "] " + jobInfo[k]);
+            }
+        }
+        System.out.println();
+        return true;
+    }
 }
