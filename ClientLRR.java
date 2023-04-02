@@ -30,6 +30,9 @@ public class ClientLRR {
             dataOut.flush();
             reply = dataIn.readLine();
             System.out.println(replier.concat(reply));
+            if (!isOk(reply)) {
+                throw new HandshakeException("HELO -> server reply is not OK");
+            }
 
             System.out.println("REDY");
             dataOut.write(("REDY\n").getBytes());
