@@ -7,7 +7,7 @@ public class HandshakeException extends Exception {
         super(msg);
     }
 
-    public HandshakeException(String code, String msg, Throwable cause) {
+    public HandshakeException(String msg, Throwable cause) {
         super(msg, cause);
     }
     
