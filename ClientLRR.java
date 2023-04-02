@@ -92,6 +92,7 @@ public class ClientLRR {
                 reply = dataIn.readLine();
                 System.out.println(replier.concat(reply));
                 curJob = doREDY(dataIn, dataOut, reply);
+                LRRCount = (LRRCount + 1) % largestServers.size();
             }
 
             System.out.println(sendier + "QUIT");
