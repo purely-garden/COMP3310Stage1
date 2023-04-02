@@ -88,7 +88,7 @@ public class ClientLRR {
                 strBuild.append(largestServerType).append(SPACE);
                 strBuild.append(LRRCount);
                 System.out.println(strBuild.toString());
-
+                System.out.println(strBuild.toString().getBytes());
                 dataOut.write(strBuild.toString().getBytes());
                 dataOut.flush();
                 reply = dataIn.readLine();

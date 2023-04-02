@@ -57,6 +57,7 @@ public class Servers {
                     largest[0] = current[0];
                     largest[1] = current[1];
                     largest[2] = current[2];
+                    serverCount = 1;
                 } else if (current[0] == largest[0] && current[1] == largest[1] && current[2] == largest[2]) {
                     serverCount++;
                 }
