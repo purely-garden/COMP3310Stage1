@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,7 +43,7 @@ public class ClientLRR {
             if (!isOk(reply)) {
                 throw new HandshakeException("AUTH -> server reply is not OK");
             }
-            
+
             Job curJob = doREDY(dataIn, dataOut, reply);
             if (curJob.isNONE()) {
                 throw new NoEmploymentException("Get an Employment", new Throwable("REDY:NONE"));
@@ -79,33 +80,40 @@ public class ClientLRR {
             Servers serverList = new Servers(getsServerRecords);
             String largestServerType = serverList.findLargest();
             int largestServerCount = serverList.getLargestServerCount();
-            System.out.println("servername "+largestServerType);
-            System.out.println("servercount "+largestServerCount);
             String schd = "SCHD";
             String SPACE = " ";
-
+            int LRRCount = 0;
             while (!curJob.isNONE()) {
-                int LRRCount = 0;
-                StringBuilder strBuild = new StringBuilder(schd).append(SPACE);
-                strBuild.append(curJob.id).append(SPACE);
-                strBuild.append(largestServerType).append(SPACE);
-                strBuild.append(LRRCount);
-                System.out.println(strBuild.toString());
-                byte[] buffer = strBuild.toString().getBytes();
-
-                dataOut.write(buffer);
-                dataOut.flush();
-                reply = dataIn.readLine();
-                System.out.println(replier.concat(reply));
-                curJob = doREDY(dataIn, dataOut, reply);
-                LRRCount = (LRRCount + 1) % largestServerCount;
+                if (curJob.getCode().compareTo("JOBN") == 0) {
+                    StringBuilder strBuild = new StringBuilder(schd).append(SPACE);
+                    strBuild.append(curJob.id).append(SPACE);
+                    strBuild.append(largestServerType).append(SPACE);
+                    strBuild.append(LRRCount);
+                    System.out.println(sendier + strBuild.toString());
+                    dataOut.write(strBuild.append("\n").toString().getBytes());
+                    dataOut.flush();
+                    reply = dataIn.readLine();
+                    System.out.println(replier.concat(reply));
+                    curJob = doREDY(dataIn, dataOut, reply);
+                    LRRCount = (LRRCount + 1) % largestServerCount;
+                } else if (!curJob.isNONE() && curJob.getCode().compareTo("JCPL") == 0) {
+                    System.out.println(sendier + "REDY");
+                    dataOut.write(("REDY\n").getBytes());
+                    dataOut.flush();
+                    reply = dataIn.readLine();
+                    System.out.println(replier.concat(reply));
+                    if (reply.compareTo("NONE") == 0) {
+                        break;
+                    }
+                    curJob = doREDY(dataIn, dataOut, reply);
+                }
             }
 
-            System.out.println(sendier + "QUIT");
             dataOut.write(("QUIT\n").getBytes());
             dataOut.flush();
+            System.out.println(sendier + "QUIT");
             reply = dataIn.readLine();
-            System.out.println(reply.concat(reply));
+            System.out.println(replier.concat(reply));
 
         } catch (Exception e) {
             System.out.println(e);
@@ -117,7 +125,7 @@ public class ClientLRR {
     }
 
     static Job doREDY(BufferedReader dataIn, DataOutputStream dataOut, String reply) throws IOException {
-        System.out.println(sendier+"REDY");
+        System.out.println(sendier + "REDY");
         dataOut.write(("REDY\n").getBytes());
         dataOut.flush();
         reply = dataIn.readLine();
@@ -125,31 +133,4 @@ public class ClientLRR {
         return new Job(reply);
     }
 
-    static boolean doREDY(BufferedReader dataIn, DataOutputStream dataOut, String reply, int[] jobInfo, String jobMsg)
-            throws IOException {
-        System.out.println(sendier+"REDY");
-        dataOut.write(("REDY\n").getBytes());
-        dataOut.flush();
-        reply = dataIn.readLine();
-        System.out.println(replier.concat(reply));
-
-        Pattern redyPattern = Pattern.compile("[a-z0-9]+", Pattern.CASE_INSENSITIVE);
-        Matcher redyMatcher = redyPattern.matcher(reply);
-        redyMatcher.find();
-        jobMsg = redyMatcher.group();
-        System.out.println("jobmsg " + jobMsg);
-        if (jobMsg.compareTo("NONE") == 0) {
-            return false;
-        }
-        jobInfo = new int[6];
-        for (int k = 0; k < 6; k++) {
-            if (redyMatcher.find()) {
-                jobInfo[k] = Integer.parseInt(redyMatcher.group(0));
-                System.out.print("JobInfo");
-                System.out.print(" [" + k + "] " + jobInfo[k]);
-            }
-        }
-        System.out.println();
-        return true;
-    }
 }
