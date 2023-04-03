@@ -4,15 +4,15 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-public class Servers {
+public class ServerList {
     String[] list;
-    String largestServers;
+    ArrayList<Server> largestServers;
     int largestServerCount;
     Pattern patternLetters = Pattern.compile("^([\\w\\-\\.]+)\\w", Pattern.CASE_INSENSITIVE);
-    Pattern patternServerSpec = Pattern.compile("\\d\\s(\\d+)\\s(\\d+)\\s(\\d+)");
+    Pattern patternServerSpec = Pattern.compile("(\\d+)\\s\\w+\\s?-\\d\\s(\\d+)\\s(\\d+)\\s(\\d+)");
     // serverType serverID state curStartTime core memory disk #wJobs #rJobs
 
-    public Servers(String[] serverList) {
+    public ServerList(String[] serverList) {
         list = serverList;
     }
 
@@ -25,11 +25,13 @@ public class Servers {
 
     public int[] serverHardware(String server) {
         Matcher serverPerfMatcher = patternServerSpec.matcher(server);
-        int[] hardware = new int[3];
+        int[] hardware = new int[4];
+        // serverid core mem disk
         if (serverPerfMatcher.find()) {
             hardware[0] = Integer.parseInt(serverPerfMatcher.group(1));
             hardware[1] = Integer.parseInt(serverPerfMatcher.group(2));
             hardware[2] = Integer.parseInt(serverPerfMatcher.group(3));
+            hardware[3] = Integer.parseInt(serverPerfMatcher.group(4));
         }
         return hardware;
     }
@@ -45,22 +47,24 @@ public class Servers {
         return capableServers;
     }
 
-    public String findLargest() {
-        String largestServerName = "";
+    public List<Server> findLargest() {
+        ArrayList<Server> largestServerName = new ArrayList<>();
         int serverCount = 1;
-        int[] largest = new int[] { 0, 0, 0 };
+        int[] largest = new int[] { -1, -1, -1, -1 };
         for (int i = 0; i < list.length; i++) {
             int[] current = serverHardware(list[i]);
             Matcher wordMatcher = patternLetters.matcher(list[i]);
             if (wordMatcher.find()) {
-                largestServerName = wordMatcher.group();
-                if (current[0] > largest[0] && current[1] > largest[1] && current[2] > largest[2]) {
-                    largest[0] = current[0];
+                if (current[1] > largest[1] && current[2] > largest[2] && current[3] > largest[3]) {
+                    largestServerName = new ArrayList<>();
+                    largestServerName.add(new Server(wordMatcher.group(), current[0]));
                     largest[1] = current[1];
                     largest[2] = current[2];
+                    largest[3] = current[3];
                     serverCount = 1;
-                } else if (current[0] == largest[0] && current[1] == largest[1] && current[2] == largest[2]) {
+                } else if (current[1] == largest[1] && current[2] == largest[2] && current[3] == largest[3]) {
                     serverCount++;
+                    largestServerName.add(new Server(wordMatcher.group(), current[0]));
                 }
             }
         }
@@ -69,7 +73,7 @@ public class Servers {
         return largestServers;
     }
 
-    public String getLargestServers() {
+    public List<Server> getLargestServers() {
         return largestServers;
     }
 

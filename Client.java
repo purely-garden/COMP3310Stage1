@@ -3,6 +3,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.net.Socket;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,6 +11,7 @@ import java.util.regex.Pattern;
 import custom_exception.HandshakeException;
 import custom_exception.NoEmploymentException;
 
+import java.util.ArrayList;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
@@ -81,25 +83,25 @@ public class Client {
             reply = dataIn.readLine();
             System.out.println(replier.concat(reply));
 
-            Servers serverList = new Servers(getsServerRecords);
-            String largestServerType = serverList.findLargest();
-            int largestServerCount = serverList.getLargestServerCount();
+            ServerList serverList = new ServerList(getsServerRecords);
+            ArrayList<Server> largestServers = (ArrayList<Server>) serverList.findLargest();
+            int largestServerCount = largestServers.size();
             String schd = "SCHD";
             String SPACE = " ";
-            int LRRCount = 0;
+            int lrrCount = 0;
             while (!curJob.isNONE()) {
                 if (curJob.getCode().compareTo("JOBN") == 0) {
                     StringBuilder strBuild = new StringBuilder(schd).append(SPACE);
                     strBuild.append(curJob.id).append(SPACE);
-                    strBuild.append(largestServerType).append(SPACE);
-                    strBuild.append(LRRCount);
+                    strBuild.append(largestServers.get(lrrCount).getName()).append(SPACE);
+                    strBuild.append(largestServers.get(lrrCount).getID());
                     System.out.println(sendier + strBuild.toString());
                     dataOut.write(strBuild.append("\n").toString().getBytes());
                     dataOut.flush();
                     reply = dataIn.readLine();
                     System.out.println(replier.concat(reply));
                     curJob = doREDY(dataIn, dataOut, reply);
-                    LRRCount = (LRRCount + 1) % largestServerCount;
+                    lrrCount = (lrrCount + 1) % largestServerCount;
                 } else if (!curJob.isNONE() && curJob.getCode().compareTo("JCPL") == 0) {
                     System.out.println(sendier + "REDY");
                     dataOut.write(("REDY\n").getBytes());
