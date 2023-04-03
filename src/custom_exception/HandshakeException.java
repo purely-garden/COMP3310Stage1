@@ -1,4 +1,4 @@
-package custom_exception;
+package src.custom_exception;
 
 public class HandshakeException extends Exception {
 

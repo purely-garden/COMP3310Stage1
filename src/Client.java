@@ -1,3 +1,4 @@
+package src;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -6,9 +7,15 @@ import java.net.Socket;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import src.custom_exception.HandshakeException;
+import src.custom_exception.NoEmploymentException;
 
-import custom_exception.HandshakeException;
-import custom_exception.NoEmploymentException;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 public class Client {
     static String replier = "C RCVD ";
