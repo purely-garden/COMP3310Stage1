@@ -1,4 +1,4 @@
-package src.custom_exception;
+package custom_exception;
 
 public class NoEmploymentException extends Exception {
 

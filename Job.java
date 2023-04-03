@@ -1,4 +1,4 @@
-package src;
+
 import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,6 @@ public class Job {
     private int disk;
     private String code;
     private int[] jobInfo;
-    
 
     public Job(int jobID, int recCore, int recMem, int recDisk) {
         id = jobID;
@@ -43,20 +42,20 @@ public class Job {
         mem = jobInfo[4];
         disk = jobInfo[5];
     }
-    
+
     public boolean canRun(String server) {
-            Pattern serverSpec = Pattern.compile("\\d\\s(\\d+)\\s(\\d+)\\s(\\d+)");
-            //serverType serverID state curStartTime core memory disk #wJobs #rJobs
-            Matcher serverPerfMatcher = serverSpec.matcher(server);
-            int coreR = -1;
-            int memR = -1;
-            int diskR = -1;
-            if(serverPerfMatcher.find()) {
-                coreR = Integer.parseInt(serverPerfMatcher.group(1));
-                memR = Integer.parseInt(serverPerfMatcher.group(2));
-                diskR = Integer.parseInt(serverPerfMatcher.group(3));
-            }
-            return core <= coreR && mem <= memR && disk <= diskR;
+        Pattern serverSpec = Pattern.compile("\\d\\s(\\d+)\\s(\\d+)\\s(\\d+)");
+        // serverType serverID state curStartTime core memory disk #wJobs #rJobs
+        Matcher serverPerfMatcher = serverSpec.matcher(server);
+        int coreR = -1;
+        int memR = -1;
+        int diskR = -1;
+        if (serverPerfMatcher.find()) {
+            coreR = Integer.parseInt(serverPerfMatcher.group(1));
+            memR = Integer.parseInt(serverPerfMatcher.group(2));
+            diskR = Integer.parseInt(serverPerfMatcher.group(3));
+        }
+        return core <= coreR && mem <= memR && disk <= diskR;
     }
 
     public List<String> findCapable(String[] serverList) {
