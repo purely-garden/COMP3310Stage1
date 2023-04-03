@@ -8,7 +8,7 @@ public class Servers {
     String[] list;
     String largestServers;
     int largestServerCount;
-    Pattern patternLetters = Pattern.compile("[a-z]+", Pattern.CASE_INSENSITIVE);
+    Pattern patternLetters = Pattern.compile("^([\\w\\-\\.]+)\\w", Pattern.CASE_INSENSITIVE);
     Pattern patternServerSpec = Pattern.compile("\\d\\s(\\d+)\\s(\\d+)\\s(\\d+)");
     // serverType serverID state curStartTime core memory disk #wJobs #rJobs
 
